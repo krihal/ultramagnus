@@ -68,7 +68,7 @@ int send_packet(int sockfd, char *dest, int dport, char *source, int sport, long
 {
     struct sockaddr_in dest_addr;
 
-    char payload[10];
+    char payload[8];
     ssize_t sent = 0;
 
     memset(&dest_addr, '0', sizeof(dest_addr));
@@ -176,11 +176,6 @@ void *packet_thread(void *input)
 	    perror("Error: Could not set socket options: ");
 	}
 
-	// Set the socket options outgoing inteface
-	if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, "enp9s0f1np1", sizeof("enp9s0f1np1")) < 0) {
-	    perror("Error: Could not set socket options interface: ");
-	}
-        
 	// Bind the socket to the source address
 	memset(&source_addr, '0', sizeof(source_addr));
 	source_addr.sin_family = AF_INET;
@@ -193,32 +188,15 @@ void *packet_thread(void *input)
 
 	// Send the packets, one to each destination
 	for (i = 0; i < nr_prefixes; i++) {
-	    usleep(1000);
 	    for (j = 0; j < ptrain; j++) {
 		DEBUG_PRINT("%s:%d/UDP -> %s:%d/UDP\n", source, dport, buffer[i], sport);
-		
+
 		if (send_packet(sockfd, buffer[i], dport, source, sport, j) < 0) {
 		    perror("Error: Could not send packet: ");
 		}
 	    }
-
-	    // Print every 1000th packet
-	    if (i % 1000 == 0) {
-		printf("\rSending packet %d of %d...", i * ptrain + ptrain, nr_prefixes * ptrain);
-		fflush(stdout);		
-	    }
 	}
 
-	printf("\nWaiting for packets to arrive their destination.\n");	    
-	    
-	// Sleep for one minute ot let the packets arrive
-	usleep(10000000);
-	
-	send_packet(sockfd, buffer[0], dport, source, sport, -1);
-	send_packet(sockfd, buffer[1], dport, source, sport, -1);
-	send_packet(sockfd, buffer[2], dport, source, sport, -1);
-	
-	printf("\n");
 	close(sockfd);
 
 	return NULL;
@@ -230,7 +208,9 @@ void *packet_thread(void *input)
 int main(int argc, char **argv)
 {
     char *file = NULL;
+    char *message = NULL;
     char *rest = NULL;
+    char *sockpath = NULL;
     char *source = NULL;
     char *sports = NULL;
     char *token = NULL;
@@ -242,6 +222,8 @@ int main(int argc, char **argv)
     int thread_id = 0;
     int ptrain = 0;
 
+    size_t message_len = 0;
+    
     pthread_t thread_ids[MAX_THREADS];
 
     struct thread_args packet_args[100];
@@ -273,6 +255,9 @@ int main(int argc, char **argv)
 	case 't':
 	    ptrain = atoi(optarg);
 	    break;
+	case 'u':
+	    sockpath = optarg;
+	    break;
 	default:
 	    usage(argv[0]);
 	}
@@ -280,9 +265,15 @@ int main(int argc, char **argv)
 
     // Read the prefixes from the file
     nr_prefixes = read_prefixes(file, debug);
+    DEBUG_PRINT("Got %d prefixes\n", nr_prefixes);
 
-    printf("Got %d prefixes, sending %d packets for each.\n", nr_prefixes, ptrain);
+    message_len = snprintf(NULL, 0, "client_start:%d", ptrain);
+    message = malloc(message_len + 1);
+    snprintf(message, message_len + 1, "client_start:%d", ptrain);
+    
+    send_server_notification(sockpath, debug, message);
 
+    usleep(500);
 
     // Split the source ports and create a thread for each
     rest = sports;
@@ -307,6 +298,7 @@ int main(int argc, char **argv)
     }
 
     DEBUG_PRINT("Sending client done notification\n");
+    send_server_notification(sockpath, debug, "client_done");
 
     return 0;
 }
