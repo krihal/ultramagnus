@@ -82,16 +82,14 @@ void dict_print()
 void dict_print_payload()
 {
     int i = 0;
-    
-    for (i = dict_size - 1; i > -1; i--) {
-	if (strcmp(dict_values[i]->payload, "0,1,2") != 0) {
-	    printf("[%d] %s:%d -> %s:%d: %s (OOO)\n", i, dict_values[i]->source, dict_values[i]->src_port, dict_values[i]->dest, dict_values[i]->dst_port, dict_values[i]->payload);
-	}
 
-	/*
+    printf("\n");
+    
+    for (i = 0; i < dict_size; i++) {
+	if (strcmp(dict_values[i]->payload, "0,1,2") != 0)
+	    printf("[%d] %s:%d -> %s:%d: %s (OOO)\n", i, dict_values[i]->source, dict_values[i]->src_port, dict_values[i]->dest, dict_values[i]->dst_port, dict_values[i]->payload);
 	else
 	    printf("[%d] %s:%d -> %s:%d: %s\n", i, dict_values[i]->source, dict_values[i]->src_port, dict_values[i]->dest, dict_values[i]->dst_port, dict_values[i]->payload);
-	*/
     }
 
     printf("\nTotal number of prefixes received: %d\n", dict_size);

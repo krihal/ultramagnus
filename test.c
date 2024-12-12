@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 	}
     }
     
-    if (send_packet(sockfd, destination, dport, source, sport, "STOP") < 0) {
+    if (send_packet(sockfd, destination, dport, source, sport, "-1") < 0) {
 	perror("Error: Could not send packet: ");
     }
     

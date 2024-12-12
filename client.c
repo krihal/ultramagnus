@@ -203,7 +203,7 @@ void *packet_thread(void *input)
 	    }
 
 	    // Print every 1000th packet
-	    if (i % 1000 == 0) {
+	    if (i + 1 % 1000 == 0) {
 		printf("\rSending packet %d of %d...", i * ptrain + ptrain, nr_prefixes * ptrain);
 		fflush(stdout);		
 	    }

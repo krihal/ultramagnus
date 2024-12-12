@@ -159,10 +159,13 @@ int main(int argc, char **argv)
 	key = calloc(key_len + 1, sizeof(char));
 	snprintf(key, key_len + 1, "%s:%d", p->dest, p->src_port);	
 
-	if (i % 1000 == 0) {
-	    printf("\rReceived packet %d, waiting for stop packet...", i);
+	if (i + 1 % 1000 == 0) {
+	    printf("\rReceived packet %d, waiting for stop packet...", i + 1);
 	    fflush(stdout);
 	}
+
+	printf("\rReceived packet %d, waiting for stop packet...", i + 1);
+	fflush(stdout);
 	
 	dict_insert(key, p);
 	i++;
