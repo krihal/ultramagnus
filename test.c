@@ -55,7 +55,6 @@ int send_packet(int sockfd, char *dest, int dport, char *source, int sport, char
 int main(int argc, char **argv)
 {
     int i = 0;
-    int j = 0;
     int sockfd = 0;
     int sport = 4001;
     int dport = 4001;
@@ -91,12 +90,12 @@ int main(int argc, char **argv)
 	perror("Error: Could not bind socket: ");
     }
 
-    for (j = 0; j < 3; j++) {
-	seq_len = snprintf(NULL, 0, "%d", j);
+    for (i = 0; i < 3; i++) {
+	seq_len = snprintf(NULL, 0, "%d", i);
 	seq = malloc(seq_len + 1);
-	snprintf(seq, seq_len + 1, "%d", j);
+	snprintf(seq, seq_len + 1, "%d", i);
 	
-	sport = 4000 + j;
+	sport = 4000 + i;
 	    
 	if (send_packet(sockfd, destination, dport, source, sport, seq) < 0) {
 	    perror("Error: Could not send packet: ");
@@ -105,12 +104,12 @@ int main(int argc, char **argv)
     
     destination = "1.0.16.0";
     
-    for (j = 0; j < 3; j++) {
-	seq_len = snprintf(NULL, 0, "%d", j);
+    for (i = 0; i < 3; i++) {
+	seq_len = snprintf(NULL, 0, "%d", i);
 	seq = malloc(seq_len + 1);
-	snprintf(seq, seq_len + 1, "%d", j);
+	snprintf(seq, seq_len + 1, "%d", i);
 	
-	sport = 4000 + j;
+	sport = 4000 + i;
 	    
 	if (send_packet(sockfd, destination, dport, source, sport, seq) < 0) {
 	    perror("Error: Could not send packet: ");
